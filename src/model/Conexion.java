@@ -17,9 +17,10 @@ public class Conexion {
     
     public static Connection conectar(){
         try{
-            Connection con = DriverManager.getConnection("jdbc:mysql:/localhost/shoestore", "root", "");
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost/shoestore", "root", "");
             return con; 
-        }catch(SQLException e){
+        }catch(Exception e){
             System.out.println("Error en la conexion: " + e);
         }
         return null;
