@@ -5,12 +5,16 @@
 package view;
 
 import java.awt.Dimension;
+import javax.swing.JDesktopPane;
 
 /**
  *
  * @author jcuel
  */
 public class FrmMenu extends javax.swing.JFrame {
+    
+    
+    public static JDesktopPane jDesktopPane_menu; 
 
     /**
      * Creates new form FrmMenu
@@ -21,6 +25,14 @@ public class FrmMenu extends javax.swing.JFrame {
         this.setExtendedState(this.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
         this.setTitle("Sistema de Ventas ");
+        
+        this.setLayout(null);
+        jDesktopPane_menu = new JDesktopPane(); 
+        
+        int ancho = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width; 
+        int alto = java.awt.Toolkit.getDefaultToolkit().getScreenSize().height;
+        this.jDesktopPane_menu.setBounds(0, 0, ancho, (alto-110));
+        this.add(jDesktopPane_menu); 
     }
 
     /**
@@ -71,6 +83,11 @@ public class FrmMenu extends javax.swing.JFrame {
 
         jMenuItem3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/nuevo-producto.png"))); // NOI18N
         jMenuItem3.setText("Nuevo Producto");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
         jMenu2.add(jMenuItem3);
 
         jMenuItem4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/producto.png"))); // NOI18N
@@ -105,6 +122,13 @@ public class FrmMenu extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        InternalFrmProducto NuevoProducto = new InternalFrmProducto(); 
+        jDesktopPane_menu.add(NuevoProducto); 
+        NuevoProducto.setVisible(true);
+        NuevoProducto.setLocation(180, 200);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     /**
      * @param args the command line arguments
