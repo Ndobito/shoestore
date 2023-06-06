@@ -127,7 +127,7 @@ public class FrmMenu extends javax.swing.JFrame {
         InternalFrmProducto NuevoProducto = new InternalFrmProducto(); 
         jDesktopPane_menu.add(NuevoProducto); 
         NuevoProducto.setVisible(true);
-        NuevoProducto.setLocation(180, 200);
+        
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     /**

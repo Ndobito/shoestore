@@ -1,19 +1,20 @@
-
 package view;
 
+import controller.ProductoController;
+import java.awt.Color;
 import java.awt.Dimension;
-
+import java.awt.HeadlessException;
+import javax.swing.JOptionPane;
+import model.Producto;
 
 public class InternalFrmProducto extends javax.swing.JInternalFrame {
-    
-    
+
     public InternalFrmProducto() {
         initComponents();
-        
+
         this.setSize(new Dimension(400, 300));
-        this.setTitle("Nuevo Producto"); 
-        
-        
+        this.setTitle("Nuevo Producto");
+
     }
 
     /**
@@ -125,6 +126,11 @@ public class InternalFrmProducto extends javax.swing.JInternalFrame {
         btnGuaProd.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         btnGuaProd.setForeground(new java.awt.Color(255, 255, 255));
         btnGuaProd.setText("Guardar");
+        btnGuaProd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuaProdActionPerformed(evt);
+            }
+        });
         getContentPane().add(btnGuaProd, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 220, 150, -1));
 
         fondo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/fondo3.jpg"))); // NOI18N
@@ -150,6 +156,111 @@ public class InternalFrmProducto extends javax.swing.JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_ctDesProdActionPerformed
 
+    private void btnGuaProdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuaProdActionPerformed
+
+        Producto producto = new Producto();
+        ProductoController controlproducto = new ProductoController();
+
+        String iva = "";
+        iva = selIVAProd.getSelectedItem().toString().trim();
+
+        if (ctNomProd.getText().equals("") || ctCantProd.getText().equals("") || ctPrecProd.getText().equals(""))
+        {
+            JOptionPane.showMessageDialog(null, "Complete todos los campos");
+            ctNomProd.setBackground(Color.red);
+            ctCantProd.setBackground(Color.red);
+            ctPrecProd.setBackground(Color.red);
+        } else
+        {
+            if (!controlproducto.existeProducto(ctNomProd.getText().trim()))
+            {
+                if (iva.equalsIgnoreCase("Seleccione una opcion: "))
+                {
+                    JOptionPane.showMessageDialog(null, "Seleccione Iva");
+                    selIVAProd.setBackground(Color.red);
+                } else
+                {
+                    try
+                    {
+                        //Nombre del Producto
+                        producto.setNomprod(ctNomProd.getText().trim());
+
+                        //Cantidad de Productos
+                        producto.setCantprod(Integer.parseInt(ctCantProd.getText().trim()));
+
+                        //Convertir Precio (,) a (.)
+                        String precio = "";
+                        double Precio = 0.0;
+                        precio = ctPrecProd.getText().trim();
+                        boolean aux = false;
+
+                        for (int i = 0; i < precio.length(); i++)
+                        {
+                            if (precio.charAt(i) == ',')
+                            {
+                                String precioNuevo = precio.replace(",", ".");
+                                Precio = Double.parseDouble(precioNuevo);
+                                aux = true;
+                            }
+                        }
+
+                        if (aux == true)
+                        {
+                            producto.setPrecprod(Precio);
+                        } else
+                        {
+                            Precio = Double.parseDouble(precio);
+                            producto.setPrecprod(Precio);
+                        }
+
+                        //Descripcion del Producto
+                        producto.setDesprod(ctDesProd.getText().trim());
+
+                        //Validacion de Iva
+                        if (iva.equalsIgnoreCase("Sin IVA"))
+                        {
+                            producto.setIvaprod(0);
+                        } else if (iva.equalsIgnoreCase("5%"))
+                        {
+                            producto.setIvaprod(5);
+                        } else if (iva.equalsIgnoreCase("19%"))
+                        {
+                            producto.setIvaprod(19);
+                        } else if (iva.equalsIgnoreCase("32%"))
+                        {
+                            producto.setIvaprod(32);
+                        }
+
+                        //Estado del Producto
+                        producto.setStateprod(1);
+
+                        if (controlproducto.guardar(producto)){
+                            JOptionPane.showMessageDialog(null, "Registro Guardado");
+                            ctNomProd.setBackground(Color.green);
+                            ctCantProd.setBackground(Color.green);
+                            ctPrecProd.setBackground(Color.green);
+                            ctDesProd.setBackground(Color.green);
+                            selIVAProd.setBackground(Color.green);
+                            
+                            this.selIVAProd.setSelectedItem("Seleccione una opcion");
+                            this.limpiarcampos();
+                        }else{
+                            JOptionPane.showMessageDialog(null, "Error al Guardar");
+                        }
+
+                    } catch(HeadlessException | NumberFormatException e){
+                        System.out.println("Error: "+ e);
+                    }
+                }
+            } else
+            {
+                JOptionPane.showMessageDialog(null, "El Producto ya se encuentra registrado");
+            }
+        }
+
+
+    }//GEN-LAST:event_btnGuaProdActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnGuaProd;
@@ -166,4 +277,12 @@ public class InternalFrmProducto extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JComboBox<String> selIVAProd;
     // End of variables declaration//GEN-END:variables
+
+    public void limpiarcampos() {
+        ctNomProd.setText("");
+        ctCantProd.setText("");
+        ctPrecProd.setText("");
+        ctDesProd.setText("");
+    }
+
 }
