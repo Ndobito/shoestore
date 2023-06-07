@@ -60,4 +60,42 @@ public class ProductoController {
         return respuesta; 
     }
     
+    public boolean editar(Producto objeto, int idProducto) {
+        boolean respuesta = false; 
+        Connection con = Conexion.conectar(); 
+        try{
+        PreparedStatement update = con.prepareStatement("UPDATE producto SET namprod=?,cantprod=?, precprod=?, desprod=?, ivaprod=? WHERE idprod= '"+idProducto+"'"); 
+        update.setString(1, objeto.getNomprod());
+        update.setInt(2, objeto.getCantprod());
+        update.setDouble(3, objeto.getPrecprod());
+        update.setString(4, objeto.getDesprod());
+        update.setInt(5, objeto.getIvaprod());
+        
+        if(update.executeUpdate() > 0){
+        respuesta = true; 
+        }
+        con.close();
+        }catch(SQLException e){
+            System.out.println("Error al actualizar Producto: "+ e);
+        }  
+        return respuesta; 
+    }
+    
+    public boolean eliminar(int idProducto) {
+        boolean respuesta = false; 
+        Connection con = Conexion.conectar(); 
+
+        try{
+            PreparedStatement eliminar = con.prepareStatement("DELETE FROM producto WHERE idprod = '"+idProducto+"'");
+
+            if(eliminar.executeUpdate() > 0){
+                respuesta = true;
+            }
+            con.close();
+        }catch(SQLException e){
+            System.out.println("Error al Eliminar Producto: "+ e);
+        }
+        
+    return respuesta; 
+    }
 }

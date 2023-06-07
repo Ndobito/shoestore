@@ -4,7 +4,9 @@
  */
 package view;
 
+import controller.ProductoController;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
@@ -14,9 +16,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import model.Conexion;
+import model.Producto;
 
 /**
  *
@@ -141,11 +145,21 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
         btnEditar.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         btnEditar.setForeground(new java.awt.Color(255, 255, 255));
         btnEditar.setText("Editar");
+        btnEditar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditarActionPerformed(evt);
+            }
+        });
 
         btnEliminar.setBackground(new java.awt.Color(255, 0, 51));
         btnEliminar.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         btnEliminar.setForeground(new java.awt.Color(255, 255, 255));
         btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -248,6 +262,111 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
+        
+        Producto producto = new Producto();
+        ProductoController controlproducto = new ProductoController();
+
+        String iva = "";
+        iva = selComboIVA.getSelectedItem().toString().trim();
+
+        if (ctNomProd.getText().isEmpty() || ctCanProd.getText().isEmpty() || ctPrecProd.getText().isEmpty())
+        {
+            JOptionPane.showMessageDialog(null, "Complete todos los campos");
+        } else
+        {
+            if (iva.equalsIgnoreCase("Seleccione una opcion: "))
+            {
+                JOptionPane.showMessageDialog(null, "Seleccione Iva");
+            } else
+            {
+                try
+                {
+                    //Nombre del Producto
+                    producto.setNomprod(ctNomProd.getText().trim());
+
+                    //Cantidad de Productos
+                    producto.setCantprod(Integer.parseInt(ctCanProd.getText().trim()));
+
+                    //Convertir Precio (,) a (.)
+                    String precio = "";
+                    double Precio = 0.0;
+                    precio = ctPrecProd.getText().trim();
+                    boolean aux = false;
+
+                    for (int i = 0; i < precio.length(); i++)
+                    {
+                        if (precio.charAt(i) == ',')
+                        {
+                            String precioNuevo = precio.replace(",", ".");
+                            Precio = Double.parseDouble(precioNuevo);
+                            aux = true;
+                        }
+                    }
+
+                    if (aux == true)
+                    {
+                        producto.setPrecprod(Precio);
+                    } else
+                    {
+                        Precio = Double.parseDouble(precio);
+                        producto.setPrecprod(Precio);
+                    }
+
+                    //Descripcion del Producto
+                    producto.setDesprod(ctDesProd.getText().trim());
+
+                    //Validacion de Iva
+                    if (iva.equalsIgnoreCase("Sin IVA"))
+                    {
+                        producto.setIvaprod(0);
+                    } else if (iva.equalsIgnoreCase("5%"))
+                    {
+                        producto.setIvaprod(5);
+                    } else if (iva.equalsIgnoreCase("19%"))
+                    {
+                        producto.setIvaprod(19);
+                    } else if (iva.equalsIgnoreCase("32%"))
+                    {
+                        producto.setIvaprod(32);
+                    }
+
+                    //Estado del Producto
+                    producto.setStateprod(1);
+
+                    if (controlproducto.editar(producto, idProducto)){
+                        JOptionPane.showMessageDialog(null, "Registro Actualizado");
+                        this.cargarTablaProductos();
+                        this.selComboIVA.setSelectedItem("Seleccione una opcion");
+                        this.limpiarCampos();
+                    }else{
+                        JOptionPane.showMessageDialog(null, "Error al Actualizar");
+                    }
+
+                } catch(HeadlessException | NumberFormatException e){
+                    System.out.println("Error: "+ e);
+                }
+            }
+        }
+
+
+    }//GEN-LAST:event_btnEditarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        ProductoController controladorProducto = new ProductoController(); 
+        if(idProducto == 0){
+            JOptionPane.showMessageDialog(null, "Seleecione un Producto");
+        }else{
+            if(controladorProducto.eliminar(idProducto)){
+                JOptionPane.showMessageDialog(null, "Producto Eliminado");
+                this.cargarTablaProductos();
+                this.limpiarCampos(); 
+            }else{
+                JOptionPane.showMessageDialog(null, "¡Error al Eliminar Producto!");
+            }
+        }
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEditar;
@@ -333,11 +452,11 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
                     PreparedStatement pst = con.prepareStatement("SELECT * FROM producto WHERE idprod= '"+idProducto+"'");  
                     ResultSet rs = pst.executeQuery(); 
                     if(rs.next()){
-                        ctNomProd.setText(rs.getString("nomprod"));
-                        ctCanProd.setText(rs.getString("canprod"));
-                        ctNomProd.setText(rs.getString("nomprod"));
-                        ctNomProd.setText(rs.getString("nomprod"));
-                        int iva = rs.getInt("porcentajeIVA"); 
+                        ctNomProd.setText(rs.getString("namprod"));
+                        ctCanProd.setText(rs.getString("cantprod"));
+                        ctPrecProd.setText(rs.getString("precprod"));
+                        ctDesProd.setText(rs.getString("desprod"));
+                        int iva = rs.getInt("ivaprod"); 
                         switch(iva){
                             case 0: 
                                 selComboIVA.setSelectedItem("Sin IVA");
@@ -357,7 +476,7 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
                                 break; 
                         }
                     }
-                    int 
+          
                 }catch(SQLException e){
                     System.out.println("Error al seleccionar Producto en la Tabla: " + e);
                 }
@@ -388,4 +507,15 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
         IVA = (double) Math.round(IVA*100)/100; 
         return IVA; 
     }
+
+    private void limpiarCampos() {
+        ctNomProd.setText("");
+        ctCanProd.setText("");
+        ctPrecProd.setText("");
+        ctDesProd.setText("");
+        selComboIVA.setSelectedItem("Sin IVA");
+
+    }
+
+    
 }
