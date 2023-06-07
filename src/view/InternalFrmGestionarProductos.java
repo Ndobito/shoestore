@@ -5,10 +5,16 @@
 package view;
 
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import model.Conexion;
 
@@ -21,6 +27,8 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
     /**
      * Creates new form InternalFrmGestionarProductos
      */
+    
+    private int idProducto; 
     public InternalFrmGestionarProductos() {
         initComponents();
         
@@ -49,7 +57,7 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblProductos = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
         btnEditar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
@@ -77,7 +85,7 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblProductos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -88,7 +96,7 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tblProductos);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -260,8 +268,8 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
     private javax.swing.JComboBox<String> selComboIVA;
+    private javax.swing.JTable tblProductos;
     // End of variables declaration//GEN-END:variables
 
     String descripcionCategoria = ""; 
@@ -274,12 +282,110 @@ public class InternalFrmGestionarProductos extends javax.swing.JInternalFrame {
         DefaultTableModel model = new DefaultTableModel(); 
         String sql = "SELECT idprod, namprod, cantprod, precprod, desprod, ivaprod FROM producto";
         Statement st;
-        
         try{
-        
-        }catch(){
+            model.addColumn("Id");
+            model.addColumn("Nombre");
+            model.addColumn("Cantidad");
+            model.addColumn("Precio");
+            model.addColumn("Descripcion");
+            model.addColumn("IVA");
+            tblProductos.setModel(model); 
+            st = con.createStatement(); 
+            ResultSet rs = st.executeQuery(sql);
             
+        while(rs.next()){
+            
+            precio = rs.getDouble("precprod"); 
+            porcentajeIVA = rs.getInt("ivaprod"); 
+            
+            Object fila[] = new Object[6]; 
+            for(int i = 0 ; i < 6; i++){
+                if (i == 5){
+                    this.calcularIVA(precio, porcentajeIVA);
+                    fila[i] = IVA; 
+                    rs.getObject(i+1); 
+                }else {
+                    fila[i] = rs.getObject(i+1); 
+                }
+            }
+            model.addRow(fila);
         }
         
+        con.close();
+        }catch(SQLException e){
+            System.out.println("Error al mostrar productos en la tabla: " + e);
+        }
+        tblProductos.addMouseListener(new MouseAdapter(){
+           @Override
+           public void mouseClicked(MouseEvent e){
+               int  fila_point = tblProductos.rowAtPoint(e.getPoint());
+               int columna_point = 0; 
+
+               if(fila_point > -1){
+                  idProducto = (int) model.getValueAt(fila_point, columna_point);
+                  EnviarDatosProductoSeleccionado(idProducto); 
+               }
+           }
+
+            private void EnviarDatosProductoSeleccionado(int idProducto) {
+                try{
+                    Connection con = Conexion.conectar(); 
+                    PreparedStatement pst = con.prepareStatement("SELECT * FROM producto WHERE idprod= '"+idProducto+"'");  
+                    ResultSet rs = pst.executeQuery(); 
+                    if(rs.next()){
+                        ctNomProd.setText(rs.getString("nomprod"));
+                        ctCanProd.setText(rs.getString("canprod"));
+                        ctNomProd.setText(rs.getString("nomprod"));
+                        ctNomProd.setText(rs.getString("nomprod"));
+                        int iva = rs.getInt("porcentajeIVA"); 
+                        switch(iva){
+                            case 0: 
+                                selComboIVA.setSelectedItem("Sin IVA");
+                            break; 
+                        case 5: 
+                            selComboIVA.setSelectedItem("5%");
+                            break; 
+                        case 19: 
+                            selComboIVA.setSelectedItem("19%");
+                            break; 
+                        case 32: 
+                            selComboIVA.setSelectedItem("32%");
+                            break; 
+
+                        default:
+                            selComboIVA.setSelectedItem("Seleccione una opcion");
+                                break; 
+                        }
+                    }
+                    int 
+                }catch(SQLException e){
+                    System.out.println("Error al seleccionar Producto en la Tabla: " + e);
+                }
+            }
+       });    
+    }
+
+    private double calcularIVA(double precio, int porcentajeIVA) {
+        int p_iva = porcentajeIVA; 
+        switch(p_iva){
+            case 0: 
+                IVA = 0.0; 
+                break; 
+            case 5: 
+                IVA = precio*0.05; 
+                break; 
+            case 19: 
+                IVA = precio*0.19; 
+                break; 
+            case 32: 
+                IVA = precio*0.32; 
+                break; 
+                
+            default:
+                    break; 
+        }
+        
+        IVA = (double) Math.round(IVA*100)/100; 
+        return IVA; 
     }
 }
